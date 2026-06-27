@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email | CyberDetect</title>
+    
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #FFFFFF;
+            --accent-green: #000000;
+            --accent-green-glow: rgba(0, 0, 0, 0.05);
+            --accent-blue: #444444;
+            --accent-blue-glow: rgba(0, 0, 0, 0.03);
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --input-bg: rgba(255, 255, 255, 0.03);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-base); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+
+        .split-layout { display: flex; width: 100%; min-height: 100vh; }
+
+        /* --- Left Info Panel --- */
+        .left-panel { flex: 1; position: relative; padding: 50px 80px; display: flex; flex-direction: column; justify-content: space-between; overflow: hidden; background: #FFFFFF; }
+        
+        .glow-sphere-1 { position: absolute; top: -10%; left: -20%; width: 60vw; height: 60vw; background: radial-gradient(circle, var(--accent-green-glow) 0%, transparent 60%); filter: blur(100px); z-index: 0; animation: float 15s infinite alternate ease-in-out; }
+        .glow-sphere-2 { position: absolute; bottom: -20%; right: -20%; width: 50vw; height: 50vw; background: radial-gradient(circle, var(--accent-blue-glow) 0%, transparent 60%); filter: blur(100px); z-index: 0; animation: float 12s infinite alternate-reverse ease-in-out; }
+        @keyframes float { 0% { transform: translate(0, 0); } 100% { transform: translate(50px, 30px); } }
+
+        .left-content { position: relative; z-index: 10; display: flex; flex-direction: column; height: 100%; justify-content: space-between; }
+
+        .brand { display: inline-flex; align-items: center; gap: 12px; text-decoration: none; color: var(--text-primary); width: max-content; }
+        .brand-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent-green), var(--accent-blue)); border-radius: 10px; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px var(--accent-green-glow); position: relative; }
+        .brand-icon::after { content: ''; position: absolute; width: 14px; height: 14px; background: var(--bg-base); border-radius: 4px; }
+        .brand-name { font-family: 'Outfit', sans-serif; font-size: 1.75rem; font-weight: 800; letter-spacing: -0.02em; }
+
+        .hero-box { margin: auto 0; }
+        .badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.05); border: 1px solid var(--glass-border); padding: 8px 16px; border-radius: 30px; font-size: 0.85rem; font-weight: 600; color: var(--accent-green); backdrop-filter: blur(10px); margin-bottom: 2rem; }
+        .badge::before { content:''; width:8px; height:8px; background:var(--accent-green); border-radius:50%; box-shadow:0 0 10px var(--accent-green); }
+
+        .hero-box h1 { font-family: 'Outfit', sans-serif; font-size: clamp(2.5rem, 4vw, 4rem); font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -0.03em; }
+        .text-gradient { background: linear-gradient(135deg, var(--accent-green), var(--accent-blue)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .hero-box p { font-size: 1.1rem; color: var(--text-secondary); max-width: 480px; line-height: 1.6; margin-bottom: 2.5rem; }
+
+        .feature-list { display: flex; flex-direction: column; gap: 1.25rem; }
+        .feature-item { display: flex; align-items: center; gap: 15px; color: var(--text-primary); font-weight: 500; font-size: 1.05rem; }
+        .feature-icon { width: 32px; height: 32px; border-radius: 8px; background: rgba(0, 0, 0, 0.08); border: 1px solid rgba(0, 0, 0, 0.2); display: flex; align-items: center; justify-content: center; color: var(--accent-green); font-size: 14px; }
+
+        .left-footer { color: var(--text-secondary); font-size: 0.9rem; }
+
+        /* --- Right Auth Panel --- */
+        .right-panel { flex: 0 0 50%; max-width: 700px; display: flex; align-items: center; justify-content: center; padding: 40px; background: #FFFFFF; backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); position: relative; border-left: 1px solid var(--glass-border); }
+        .auth-form-container { width: 100%; max-width: 440px; animation: slideIn 0.5s ease forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+
+        .auth-header { margin-bottom: 2.5rem; text-align: center; }
+        .auth-header h2 { font-family: 'Outfit', sans-serif; font-size: 2.2rem; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .auth-header p { color: var(--text-secondary); font-size: 1rem; }
+
+        /* OTP Inputs */
+        .otp-container { display: flex; gap: 12px; justify-content: center; margin-bottom: 35px; }
+        
+        .otp-input {
+            width: 55px; height: 65px; text-align: center; font-size: 1.6rem; font-family: 'Inter', sans-serif; font-weight: 600;
+            background: var(--input-bg); border: 1px solid var(--glass-border); border-radius: 12px; color: var(--text-primary); transition: all 0.3s ease;
+        }
+
+        .otp-input:focus { outline: none; border-color: var(--accent-green); background: rgba(0, 0, 0, 0.03); box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.08); }
+        .otp-input::-webkit-outer-spin-button, .otp-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+        .btn { width: 100%; padding: 16px; border-radius: 12px; font-family: 'Inter', sans-serif; font-size: 1.05rem; font-weight: 600; cursor: pointer; transition: all 0.3s ease; display: flex; align-items: center; justify-content: center; gap: 10px; border: none; text-decoration: none; }
+        .btn-primary { background: linear-gradient(135deg, #000000, #333333); color: #FFF; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25); }
+        .btn-primary:hover { transform: translateY(-3px); box-shadow: 0 12px 25px rgba(0, 0, 0, 0.3); }
+
+        .auth-footer { text-align: center; margin-top: 2rem; font-size: 0.95rem; color: var(--text-secondary); }
+        .auth-footer a { color: var(--accent-green); text-decoration: none; font-weight: 500; transition: color 0.3s; }
+        .auth-footer a:hover { color: var(--text-primary); text-decoration: underline; }
+
+        @media (max-width: 992px) {
+            .left-panel { display: none; }
+            .right-panel { flex: 1; max-width: 100%; border-left: none; }
+        }
+        * { font-weight: 800 !important; }
+    </style>
+</head>
+<body>
+    <div class="split-layout">
+        <!-- Left Info Panel -->
+        <div class="left-panel">
+            <div class="glow-sphere-1"></div>
+            <div class="glow-sphere-2"></div>
+            
+            <div class="left-content">
+                <a href="../../index.html" class="brand">
+                    <div class="brand-icon"></div>
+                    <span class="brand-name">CyberDetect</span>
+                </a>
+
+                <div class="hero-box">
+                    <div class="badge">Security Verification</div>
+                    <h1>Authenticate <br><span class="text-gradient">Your Identity</span></h1>
+                    <p>To ensure maximum security, we require email verification before granting access to the system.</p>
+                </div>
+
+                <div class="left-footer">
+                    &copy; 2026 CyberDetect Inc. All rights reserved.
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Auth Panel -->
+        <div class="right-panel">
+            <div class="auth-form-container">
+                <div class="auth-header">
+                    <h2>Verify Email</h2>
+                    <p>We've sent a 6-digit code to your email.</p>
+                </div>
+
+                <form id="otp-form">
+                    <div class="otp-container">
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required autofocus>
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                        <input type="text" class="otp-input" maxlength="1" pattern="[0-9]" inputmode="numeric" required>
+                    </div>
+                    <p id="auth-err" style="color: #FF5F56; font-size: 0.85rem; margin-bottom: 10px; display: none; text-align: center;"></p>
+                    <button type="submit" id="btn-verify" class="btn btn-primary">Verify Code</button>
+                </form>
+
+                <div class="auth-footer">
+                    Didn't receive the code? <a href="#">Resend Code</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        // Automatic tabbing logic for OTP inputs
+        const inputs = document.querySelectorAll('.otp-input');
+        
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', (e) => {
+                e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                if (e.target.value.length > 0) {
+                    if (index < inputs.length - 1) {
+                        inputs[index + 1].focus();
+                    }
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && e.target.value.length === 0) {
+                    if (index > 0) {
+                        inputs[index - 1].focus();
+                    }
+                }
+            });
+        });
+
+        // Supabase logic
+        const SUPABASE_URL = 'https://ysbfrcspxiytwpitpbbk.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzYmZyY3NweGl5dHdwaXRwYmJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NjAwMTQsImV4cCI6MjA5ODEzNjAxNH0.w5Vz_JIva0Qysn5RlVdQAQhd8EGVc8P3d3BnJeHhOqY';
+        
+        // Wait for script to load before creating client
+        document.addEventListener('DOMContentLoaded', () => {
+            const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+            document.getElementById('otp-form').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const otpVals = Array.from(document.querySelectorAll('.otp-input')).map(inp => inp.value).join('');
+                const email = sessionStorage.getItem('auth_email');
+                const errEl = document.getElementById('auth-err');
+                const btn = document.getElementById('btn-verify');
+
+                errEl.style.display = 'none';
+
+                if (!email) {
+                    errEl.textContent = 'Session expired. Please try registering again.';
+                    errEl.style.display = 'block';
+                    return;
+                }
+
+                btn.disabled = true;
+                btn.textContent = 'Verifying...';
+
+                const { data, error } = await sb.auth.verifyOtp({
+                    email,
+                    token: otpVals,
+                    type: 'signup'
+                });
+
+                if (error) {
+                    btn.disabled = false;
+                    btn.textContent = 'Verify Code';
+                    errEl.textContent = error.message;
+                    errEl.style.display = 'block';
+                    return;
+                }
+
+                window.location.replace('../dashboard/dashboard.html');
+            });
+        });
+    </script>
+</body>
+</html>

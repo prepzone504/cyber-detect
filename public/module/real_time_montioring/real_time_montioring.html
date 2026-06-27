@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Monitoring | CyberDetect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --bg-base: #FFFFFF; --bg-surface: #FFFFFF; --text-primary: #000000; --text-secondary: #555555; --border-color: #000000; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; font-weight: 800 !important; }
+        body { display: flex; height: 100vh; background: var(--bg-base); color: var(--text-primary); overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--bg-surface); border-right: 2px solid var(--border-color); display: flex; flex-direction: column; padding: 25px; z-index: 20; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; text-decoration: none; color: black; }
+        .brand-icon { width: 32px; height: 32px; background: #000000; border-radius: 8px; }
+        .brand-name { font-family: 'Outfit', sans-serif; font-size: 1.5rem; }
+        .nav-item { display: flex; align-items: center; padding: 12px 15px; color: var(--text-primary); text-decoration: none; margin-bottom: 8px; transition: all 0.3s; border: 2px solid transparent; }
+        .nav-item:hover, .nav-item.active { background: #000000; color: #FFFFFF; }
+        
+        /* Main Area */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+        .topbar { height: 75px; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; background: #FFFFFF; position: sticky; top: 0; z-index: 10; }
+        .content-area { padding: 40px; display: flex; flex-direction: column; gap: 30px; height: calc(100vh - 75px); overflow-y: auto;}
+        
+        /* Speed Graph */
+        .graph-card { border: 2px solid #000; padding: 20px; background: #FFF; box-shadow: 10px 10px 0px rgba(0,0,0,1); }
+        .graph-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .chart-wrap { height: 200px; position: relative; }
+        
+        /* Terminal specific */
+        .terminal-card { border: 2px solid var(--border-color); padding: 25px; box-shadow: 10px 10px 0px rgba(0,0,0,1); display: flex; flex-direction: column; flex: 1; min-height: 400px; background: #FFF; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .card-title { font-family: 'Outfit', sans-serif; font-size: 1.3rem; text-transform: uppercase; }
+        
+        .terminal { background: #FFF; border: 2px solid var(--border-color); padding: 20px; font-family: 'Courier New', Courier, monospace; flex: 1; overflow-y: auto; color: #000; font-size: 0.95rem; line-height: 1.5; }
+        
+        /* Scrollbar for terminal */
+        .terminal::-webkit-scrollbar { width: 8px; }
+        .terminal::-webkit-scrollbar-track { background: transparent; }
+        .terminal::-webkit-scrollbar-thumb { background: #000; }
+        
+        .log-line { margin-bottom: 6px; border-bottom: 2px dashed #EEE; padding-bottom: 6px; animation: slideInLog 0.2s ease forwards; }
+        @keyframes slideInLog { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
+        
+        .log-time { color: #555; margin-right: 15px; }
+        .log-safe { background: #000; color: #FFF; padding: 2px 6px; font-size: 0.8rem; }
+        .log-danger { background: #FFF; color: #000; border: 2px solid #000; padding: 2px 6px; font-size: 0.8rem; }
+        .log-ip { color: #000; }
+
+        .btn-toggle { padding: 8px 16px; border: 2px solid #000; background: #FFF; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; }
+        .btn-toggle.active { background: #000; color: #FFF; }
+
+        .live-badge { display: flex; align-items: center; gap: 10px; border: 2px solid #000; padding: 8px 16px; }
+        .pulse-dot { width: 10px; height: 10px; background: #000; border-radius: 50%; animation: pulse 1s infinite alternate; }
+        @keyframes pulse { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="../../index.html" class="brand"><div class="brand-icon"></div><span class="brand-name">CyberDetect</span></a>
+        <nav>
+            <a href="../dashboard/dashboard.html" class="nav-item">Dashboard</a>
+            <a href="../real_time_montioring/real_time_montioring.html" class="nav-item active">Real-Time Monitoring</a>
+            <a href="../alert_and_treat/alert_and_treat.html" class="nav-item">Alerts & Threats</a>
+            <a href="../upload/upload.html" class="nav-item">Upload Logs</a>
+        </nav>
+        <div style="margin-top: auto;"><a href="#" id="signOutBtn" class="nav-item" style="border-color: #000; text-align: center; justify-content: center;">Sign Out</a></div>
+    </div>
+    
+    <div class="main-content">
+        <div class="topbar">
+            <h2 style="font-family: 'Outfit', sans-serif;">Live Monitoring</h2>
+            <div class="live-badge" id="live-indicator">
+                <span class="pulse-dot"></span>
+                <span style="font-size: 0.85rem; text-transform: uppercase;" id="live-text">Listening for packets</span>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <!-- Speed Graph -->
+            <div class="graph-card">
+                <div class="graph-header">
+                    <span style="font-size: 1.2rem; text-transform: uppercase;">Traffic Velocity</span>
+                    <button class="btn-toggle active" id="toggle-btn">Stop Monitoring</button>
+                </div>
+                <div class="chart-wrap">
+                    <canvas id="speedChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Terminal -->
+            <div class="terminal-card">
+                <div class="card-header">
+                    <div class="card-title">Live Network Stream</div>
+                    <div style="font-size: 0.9rem; border: 2px solid #000; padding: 4px 8px;">Supabase Realtime Channel</div>
+                </div>
+                
+                <div class="terminal" id="terminal">
+                    <!-- Logs will be populated here via Supabase Realtime -->
+                    <div style="text-align: center; color: #555; margin-top: 20px;" id="waiting-msg">Waiting for database inserts in `network_logs`...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Speed chart initialization
+        const labels = Array(30).fill('');
+        const speedData = Array(30).fill(0);
+        const speedChart = new Chart(document.getElementById('speedChart'), {
+            type: 'line',
+            data: {
+                labels,
+                datasets: [{
+                    data: speedData,
+                    borderColor: '#000',
+                    backgroundColor: 'rgba(0,0,0,0.1)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: { duration: 300 },
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { display: false },
+                    y: {
+                        min: 0,
+                        grid: { color: '#EEE' },
+                        ticks: { color: '#000', font: { weight: '800' } }
+                    }
+                }
+            }
+        });
+
+        // Supabase Initialization
+        const supabaseUrl = 'https://ysbfrcspxiytwpitpbbk.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzYmZyY3NweGl5dHdwaXRwYmJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NjAwMTQsImV4cCI6MjA5ODEzNjAxNH0.w5Vz_JIva0Qysn5RlVdQAQhd8EGVc8P3d3BnJeHhOqY';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Check Auth
+        async function checkUser() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session && !sessionStorage.getItem('auth_email')) {
+                window.location.href = '../auth/login.html';
+            }
+        }
+        checkUser();
+
+        document.getElementById('signOutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await supabase.auth.signOut();
+            sessionStorage.clear();
+            window.location.href = '../auth/login.html';
+        });
+
+        const terminal = document.getElementById('terminal');
+        const waitingMsg = document.getElementById('waiting-msg');
+        let monitoring = true;
+        let realtimeChannel = null;
+        let batchCounter = 0;
+
+        function addLogLine(record) {
+            if(waitingMsg) waitingMsg.style.display = 'none';
+
+            const time = new Date(record.timestamp).toLocaleTimeString();
+            const isThreat = record.prediction !== 'Normal';
+            const statusHTML = isThreat ? `<span class="log-danger">THREAT</span>` : `<span class="log-safe">NORMAL</span>`;
+            
+            const line = document.createElement('div');
+            line.className = 'log-line';
+            line.innerHTML = `<span class="log-time">${time}</span> | SRC: <span class="log-ip">${record.source_ip.padEnd(15)}</span> | DST: <span class="log-ip">${record.dest_ip.padEnd(15)}</span> | TYPE: ${record.prediction.padEnd(8)} | ${statusHTML}`;
+            
+            terminal.appendChild(line);
+            terminal.scrollTop = terminal.scrollHeight;
+            
+            if (terminal.childElementCount > 100) {
+                terminal.removeChild(terminal.firstChild);
+            }
+        }
+
+        // Mock chart updates for smooth visual, but inject real data spikes
+        setInterval(() => {
+            if(monitoring) {
+                speedData.push(batchCounter);
+                speedData.shift();
+                speedChart.update('none');
+                batchCounter = Math.max(0, batchCounter - 5); // decay
+            }
+        }, 1000);
+
+        function startMonitoring() {
+            realtimeChannel = supabase.channel('custom-all-channel')
+            .on(
+                'postgres_changes',
+                { event: 'INSERT', schema: 'public', table: 'network_logs' },
+                (payload) => {
+                    addLogLine(payload.new);
+                    batchCounter += 20; // Spike the chart when data arrives
+                }
+            )
+            .subscribe((status) => {
+                if (status === 'SUBSCRIBED') {
+                    console.log('Listening to network_logs...');
+                }
+            });
+        }
+
+        function stopMonitoring() {
+            if (realtimeChannel) {
+                supabase.removeChannel(realtimeChannel);
+                realtimeChannel = null;
+            }
+        }
+
+        // Initial Start
+        startMonitoring();
+
+        // Toggle Button
+        document.getElementById('toggle-btn').addEventListener('click', (e) => {
+            monitoring = !monitoring;
+            const btn = e.target;
+            const badge = document.getElementById('live-indicator');
+            const text = document.getElementById('live-text');
+
+            if (monitoring) {
+                btn.textContent = 'Stop Monitoring';
+                btn.classList.add('active');
+                badge.style.opacity = '1';
+                text.textContent = 'Listening for packets';
+                startMonitoring();
+            } else {
+                btn.textContent = 'Start Monitoring';
+                btn.classList.remove('active');
+                badge.style.opacity = '0.5';
+                text.textContent = 'Monitoring Paused';
+                stopMonitoring();
+            }
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CyberDetect | Cyber Threat Detection</title>
+    
+    <!-- Modern Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* Premium Dark Green and Blue Palette */
+            --bg-base: #FFFFFF;
+            --bg-surface: rgba(240, 240, 240, 0.4);
+            --accent-green: #000000;
+            --accent-green-glow: rgba(0, 0, 0, 0.05);
+            --accent-blue: #444444;
+            --accent-blue-glow: rgba(0, 0, 0, 0.03);
+            
+            --text-primary: #111827;
+            --text-secondary: #6B7280;
+            
+            --glass-border: rgba(0, 0, 0, 0.1);
+            --glass-bg: rgba(0, 0, 0, 0.02);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Abstract Glow Effects */
+        .glow-sphere-1 {
+            position: absolute;
+            width: 70vw;
+            height: 70vw;
+            max-width: 800px;
+            max-height: 800px;
+            background: radial-gradient(circle, var(--accent-green-glow) 0%, rgba(0,0,0,0) 60%);
+            top: -20%;
+            left: -10%;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            animation: pulse 12s infinite alternate ease-in-out;
+            pointer-events: none;
+        }
+
+        .glow-sphere-2 {
+            position: absolute;
+            width: 60vw;
+            height: 60vw;
+            max-width: 700px;
+            max-height: 700px;
+            background: radial-gradient(circle, var(--accent-blue-glow) 0%, rgba(0,0,0,0) 60%);
+            bottom: -10%;
+            right: -10%;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: 0;
+            animation: pulse 15s infinite alternate-reverse ease-in-out;
+            pointer-events: none;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1) translate(0, 0); opacity: 0.6; }
+            100% { transform: scale(1.1) translate(50px, 30px); opacity: 1; }
+        }
+
+        /* Navigation */
+        nav {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem 5%;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(255, 255, 255, 0.7);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .brand-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--accent-green), var(--accent-blue));
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 20px var(--accent-green-glow);
+            position: relative;
+        }
+        
+        .brand-icon::after {
+            content: '';
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: var(--bg-base);
+            border-radius: 4px;
+        }
+
+        .brand-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 3rem;
+        }
+
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-links a:hover {
+            color: var(--text-primary);
+        }
+
+        /* Hero Section */
+        main {
+            position: relative;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4rem 20px;
+            margin-top: 2vh;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--accent-green);
+            backdrop-filter: blur(10px);
+            margin-bottom: 2rem;
+            animation: slideUp 0.8s ease forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background-color: var(--accent-green);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--accent-green);
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        h1 {
+            font-family: 'Outfit', sans-serif;
+            font-size: clamp(3rem, 6vw, 5rem);
+            font-weight: 800;
+            line-height: 1.1;
+            max-width: 1000px;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.03em;
+            animation: slideUp 0.8s ease 0.1s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .text-gradient {
+            background: linear-gradient(135deg, var(--accent-green) 0%, var(--accent-blue) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            font-size: clamp(1.1rem, 2vw, 1.3rem);
+            color: var(--text-secondary);
+            max-width: 700px;
+            line-height: 1.6;
+            margin-bottom: 3rem;
+            animation: slideUp 0.8s ease 0.2s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .cta-container {
+            display: flex;
+            gap: 1.5rem;
+            animation: slideUp 0.8s ease 0.3s forwards;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 1rem 2.5rem;
+            border-radius: 12px;
+            font-family: 'Inter', sans-serif;
+            font-size: 1.05rem;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #000000, #333333);
+            color: #FFF;
+            border: none;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.1), transparent);
+            transition: left 0.6s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn-primary:hover::before {
+            left: 100%;
+        }
+
+        .btn-secondary {
+            background: var(--bg-surface);
+            color: var(--text-primary);
+            border: 1px solid var(--glass-border);
+            backdrop-filter: blur(10px);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(0, 0, 0, 0.05);
+            border-color: rgba(0, 0, 0, 0.15);
+            transform: translateY(-3px);
+        }
+
+        /* App Preview Mockup */
+        .app-mockup {
+            margin-top: 5rem;
+            width: 90%;
+            max-width: 1100px;
+            height: 400px;
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.8) 0%, rgba(240, 240, 240, 0) 100%);
+            border: 1px solid var(--glass-border);
+            border-bottom: none;
+            border-radius: 20px 20px 0 0;
+            box-shadow: 0 -30px 80px rgba(0, 0, 0, 0.05);
+            position: relative;
+            overflow: hidden;
+            animation: slideUp 1s ease 0.5s forwards;
+            opacity: 0;
+            transform: translateY(40px);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+        }
+
+        .mockup-header {
+            height: 60px;
+            border-bottom: 1px solid var(--glass-border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 8px;
+        }
+
+        .mac-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(0,0,0,0.1);
+        }
+
+        .mac-dot:nth-child(1) { background: #E5E7EB; }
+        .mac-dot:nth-child(2) { background: #E5E7EB; }
+        .mac-dot:nth-child(3) { background: #E5E7EB; }
+
+        .mockup-body {
+            padding: 40px;
+            display: flex;
+            gap: 30px;
+            height: calc(100% - 60px);
+        }
+
+        .mock-card {
+            background: rgba(0, 0, 0, 0.02);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            border-radius: 12px;
+            transition: all 0.5s ease;
+        }
+
+        .mock-sidebar {
+            flex: 0 0 250px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 20px;
+        }
+
+        .mock-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+        
+        .mock-line {
+            height: 12px;
+            background: rgba(0, 0, 0, 0.05);
+            border-radius: 6px;
+            width: 100%;
+        }
+
+        .mock-chart {
+            flex: 1;
+            background: linear-gradient(180deg, rgba(0, 0, 0, 0.03) 0%, transparent 100%);
+            border-radius: 12px;
+            border: 1px solid rgba(0, 0, 0, 0.08);
+            position: relative;
+        }
+
+        @keyframes slideUp {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .cta-container { flex-direction: column; width: 100%; max-width: 350px; }
+            .btn { width: 100%; }
+            .app-mockup { height: 250px; margin-top: 3rem; }
+            .mock-sidebar { display: none; }
+        }
+        * { font-weight: 800 !important; }
+    </style>
+</head>
+<body>
+    <!-- Ambient Backgrounds -->
+    <div class="glow-sphere-1"></div>
+    <div class="glow-sphere-2"></div>
+
+    <!-- Top Navigation -->
+    <nav>
+        <a href="#" class="brand">
+            <div class="brand-icon"></div>
+            <span class="brand-name">CyberDetect</span>
+        </a>
+        <div class="nav-links">
+            <a href="#">Solutions</a>
+            <a href="#">Technology</a>
+            <a href="#">Resources</a>
+        </div>
+        <div style="width: 130px; display: flex; justify-content: flex-end;">
+            <!-- Placeholder to balance flex -->
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main>
+        <div class="status-badge">
+            <div class="status-dot"></div>
+            Monitoring Active • Zero Threats
+        </div>
+        
+        <h1>Detect & Prevent Cyber Threats with <br><span class="text-gradient">Intelligent Defense</span></h1>
+        
+        <p class="subtitle">
+            CyberDetect is an enterprise-grade cybercrime detection system. We use advanced machine learning algorithms to monitor, analyze, and neutralize network threats before they compromise your infrastructure.
+        </p>
+
+        <div class="cta-container">
+            <a href="module/auth/register.html" class="btn btn-primary">
+                Deploy CyberDetect Free
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></svg>
+            </a>
+            <a href="module/auth/login.html" class="btn btn-secondary">
+                Sign In to Dashboard
+            </a>
+        </div>
+
+        <!-- Dashboard Mockup -->
+        <div class="app-mockup">
+            <div class="mockup-header">
+                <div class="mac-dot"></div>
+                <div class="mac-dot"></div>
+                <div class="mac-dot"></div>
+            </div>
+            <div class="mockup-body">
+                <div class="mock-card mock-sidebar">
+                    <div class="mock-line" style="width: 60%; margin-bottom: 20px;"></div>
+                    <div class="mock-line" style="width: 80%"></div>
+                    <div class="mock-line" style="width: 70%"></div>
+                    <div class="mock-line" style="width: 90%"></div>
+                </div>
+                <div class="mock-card mock-main">
+                    <div style="display: flex; gap: 20px;">
+                        <div class="mock-line" style="height: 40px; flex: 1; border-radius: 8px;"></div>
+                        <div class="mock-line" style="height: 40px; flex: 1; border-radius: 8px;"></div>
+                        <div class="mock-line" style="height: 40px; flex: 1; border-radius: 8px;"></div>
+                    </div>
+                    <div class="mock-chart"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Micro-animations for the mockup to make it feel "live"
+        document.addEventListener('DOMContentLoaded', () => {
+            const chartArea = document.querySelector('.mock-chart');
+            
+            setInterval(() => {
+                if (chartArea) {
+                    const randomOpacity = Math.random() * 0.1 + 0.02;
+                    chartArea.style.background = `linear-gradient(180deg, rgba(0, 0, 0, ${randomOpacity}) 0%, transparent 100%)`;
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>

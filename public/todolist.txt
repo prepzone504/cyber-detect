@@ -1,0 +1,75 @@
+3-DAY PROJECT TO-DO LIST: Cybercrime Detection and Prevention System
+
+PROJECT OVERVIEW
+Goal: Design and implement a cybercrime detection and prevention system with automated analysis, real-time alerts, and machine learning capabilities.
+Tech Stack: HTML, CSS, JavaScript (Frontend), Python (Backend/ML), Supabase (Database/Auth).
+Constraint: Keep the UI simple and easy to use.
+
+---
+
+DAY 1: FRONTEND (UI/UX) - HTML, CSS, JavaScript
+Objective: Build a simple, intuitive, and responsive dashboard for monitoring and alerts.
+
+[ ] 1. Project Setup
+    - Initialize the project directory structure (e.g., public/, assets/, css/, js/).
+    - Set up the main index.html file.
+
+[ ] 2. Authentication UI
+    - Create a simple Login and Registration page for admins/users.
+
+[ ] 3. Dashboard UI (Core Monitoring Interface)
+    - Design a clean layout with a sidebar (Navigation) and main content area.
+    - Create a "Network Logs Upload" section (drag-and-drop or file input for uploading CSV datasets for analysis).
+    - Create a "Real-Time Monitoring" view (charts, status indicators).
+    - Create an "Alerts & Threats" view (table/list of detected suspicious activities).
+    - Ensure the design is visually appealing but straightforward.
+
+[ ] 4. Frontend Interactivity (JavaScript)
+    - Add logic to handle navigation between dashboard views without reloading.
+    - Create mock data structures to simulate incoming threats and populate the UI dynamically before backend integration.
+
+
+DAY 2: BACKEND & DATABASE - Python & Supabase
+Objective: Set up the database, authentication, and the core detection logic.
+
+[ ] 1. Supabase Setup (Database & Auth)
+    - Create a new Supabase project.
+    - Set up Authentication (Email/Password).
+    - Create database tables: 'users' (for admin access), 'activities' (simulated network/user logs), and 'alerts' (detected threats).
+
+[ ] 2. Python Backend Setup
+    - Initialize a Python project (using a lightweight framework like FastAPI or Flask).
+    - Install necessary libraries (supabase, pandas, scikit-learn for ML, web framework).
+
+[ ] 3. Threat Detection Logic (Machine Learning/Rules)
+    - Develop a basic anomaly detection script. For the prototype, this can be a simple ML model (e.g., Isolation Forest) trained on dummy network data, or a robust rule-based engine simulating ML detection.
+    - Write a function that takes activity data, analyzes it, and flags it as 'safe' or 'threat'.
+
+[ ] 4. API Endpoints
+    - Create Python API endpoints to:
+      - Receive simulated network/user activity.
+      - Process data through the detection logic.
+      - Save detected threats to the Supabase 'alerts' table.
+      - Fetch alerts to be consumed by the frontend.
+
+
+DAY 3: INTEGRATION & TESTING
+Objective: Connect the UI with the Python backend and Supabase, and test the full flow.
+
+[ ] 1. Supabase Frontend Integration
+    - Integrate Supabase JS client into the frontend.
+    - Connect the Login/Register forms to Supabase Auth.
+    - Protect the Dashboard so only authenticated users can access it.
+
+[ ] 2. API Integration (Frontend to Python Backend)
+    - Use JavaScript `fetch` API to call the Python backend endpoints.
+    - Fetch the latest alerts from the backend/Supabase and display them dynamically on the Dashboard's Alerts table.
+
+[ ] 3. Real-Time/Simulated Threat Pipeline
+    - Set up a script to periodically send "dummy" network traffic to the backend.
+    - Have the UI poll the backend (or use Supabase Realtime feature) to update the dashboard immediately when a new threat is detected.
+
+[ ] 4. System Evaluation & Testing
+    - Simulate common cyberattacks (e.g., unusual login spikes, excessive data requests) to verify the system accurately detects and logs them.
+    - Ensure alerts appear correctly on the UI.
+    - Final polish of the UI to ensure simplicity and ease of use.

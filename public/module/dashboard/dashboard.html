@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | CyberDetect</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --bg-base: #FFFFFF; --bg-surface: #FFFFFF; --text-primary: #000000; --text-secondary: #555555; --border-color: #000000; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; font-weight: 800 !important; }
+        body { display: flex; height: 100vh; background: var(--bg-base); color: var(--text-primary); overflow: hidden; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; background: var(--bg-surface); border-right: 2px solid var(--border-color); display: flex; flex-direction: column; padding: 25px; z-index: 20; }
+        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; text-decoration: none; color: black; }
+        .brand-icon { width: 32px; height: 32px; background: #000000; border-radius: 8px; }
+        .brand-name { font-family: 'Outfit', sans-serif; font-size: 1.5rem; }
+        .nav-item { display: flex; align-items: center; padding: 12px 15px; color: var(--text-primary); text-decoration: none; margin-bottom: 8px; transition: all 0.3s; border: 2px solid transparent; }
+        .nav-item:hover, .nav-item.active { background: #000000; color: #FFFFFF; }
+        
+        /* Main Area */
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+        .topbar { height: 75px; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; background: #FFFFFF; position: sticky; top: 0; z-index: 10; }
+        .content-area { padding: 40px; }
+        
+        /* Dashboard Specific */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 25px; margin-bottom: 35px; }
+        .stat-card { background: #FFF; border: 2px solid #000; padding: 25px; box-shadow: 10px 10px 0px rgba(0,0,0,1); }
+        .stat-value { font-family: 'Outfit', sans-serif; font-size: 3rem; margin: 10px 0; }
+        .stat-label { font-size: 0.9rem; text-transform: uppercase; }
+        
+        .charts-container { display: grid; grid-template-columns: 2fr 1fr; gap: 25px; }
+        @media(max-width: 1024px) {
+            .charts-container { grid-template-columns: 1fr; }
+        }
+        .chart-card { background: #FFF; border: 2px solid #000; padding: 25px; box-shadow: 10px 10px 0px rgba(0,0,0,1); }
+        .card-header { font-family: 'Outfit', sans-serif; font-size: 1.2rem; text-transform: uppercase; margin-bottom: 20px; }
+        
+        .live-badge { display: flex; align-items: center; gap: 10px; border: 2px solid #000; padding: 8px 16px; }
+        .pulse-dot { width: 10px; height: 10px; background: #000; border-radius: 50%; animation: pulse 1s infinite alternate; }
+        @keyframes pulse { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <a href="../../index.html" class="brand"><div class="brand-icon"></div><span class="brand-name">CyberDetect</span></a>
+        <nav>
+            <a href="../dashboard/dashboard.html" class="nav-item active">Dashboard</a>
+            <a href="../real_time_montioring/real_time_montioring.html" class="nav-item">Real-Time Monitoring</a>
+            <a href="../alert_and_treat/alert_and_treat.html" class="nav-item">Alerts & Threats</a>
+            <a href="../upload/upload.html" class="nav-item">Upload Logs</a>
+        </nav>
+        <div style="margin-top: auto;"><a href="#" id="signOutBtn" class="nav-item" style="border-color: #000; text-align: center; justify-content: center;">Sign Out</a></div>
+    </div>
+    
+    <div class="main-content">
+        <div class="topbar">
+            <h2 style="font-family: 'Outfit', sans-serif;">System Overview</h2>
+            <div class="live-badge">
+                <span class="pulse-dot"></span>
+                <span style="font-size: 0.85rem; text-transform: uppercase;">DB Connected</span>
+            </div>
+        </div>
+        
+        <div class="content-area">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-label">Total Traffic Processed</div>
+                    <div class="stat-value" id="s-total">0</div>
+                    <div style="color: #555; font-size: 0.85rem;">All recorded events</div>
+                </div>
+                <div class="stat-card" style="background: #000; color: #FFF;">
+                    <div class="stat-label">Active Threats</div>
+                    <div class="stat-value" id="s-threats">0</div>
+                    <div style="color: #DDD; font-size: 0.85rem;">Requires attention</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Threats Blocked</div>
+                    <div class="stat-value" id="s-blocked">0</div>
+                    <div style="color: #555; font-size: 0.85rem;">Automated defense</div>
+                </div>
+            </div>
+
+            <div class="charts-container">
+                <div class="chart-card">
+                    <div class="card-header">Traffic Volume (Recent Logs)</div>
+                    <canvas id="mainChart" height="120"></canvas>
+                </div>
+                <div class="chart-card">
+                    <div class="card-header">Threat Proportions</div>
+                    <canvas id="doughnutChart" height="250"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Supabase Initialization
+        const supabaseUrl = 'https://ysbfrcspxiytwpitpbbk.supabase.co';
+        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzYmZyY3NweGl5dHdwaXRwYmJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NjAwMTQsImV4cCI6MjA5ODEzNjAxNH0.w5Vz_JIva0Qysn5RlVdQAQhd8EGVc8P3d3BnJeHhOqY';
+        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+
+        // Check Auth
+        async function checkUser() {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (!session && !sessionStorage.getItem('auth_email')) {
+                window.location.href = '../auth/login.html';
+            }
+            fetchDashboardData();
+        }
+        checkUser();
+
+        document.getElementById('signOutBtn').addEventListener('click', async (e) => {
+            e.preventDefault();
+            await supabase.auth.signOut();
+            sessionStorage.clear();
+            window.location.href = '../auth/login.html';
+        });
+
+        // Initialize Charts with empty data first
+        const mainCtx = document.getElementById('mainChart').getContext('2d');
+        const mainChart = new Chart(mainCtx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Normal Traffic',
+                    data: [],
+                    borderColor: '#000',
+                    backgroundColor: 'rgba(0, 0, 0, 0.05)',
+                    borderWidth: 2,
+                    fill: true,
+                    tension: 0.4
+                }, {
+                    label: 'Threats',
+                    data: [],
+                    borderColor: '#555',
+                    borderDash: [5, 5],
+                    borderWidth: 2,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { labels: { color: '#000', font: { family: 'Inter', weight: 'bold' } } } },
+                scales: { 
+                    y: { grid: { color: '#EEE' }, ticks: { color: '#000', font: { weight: 'bold' } } },
+                    x: { grid: { display: false }, ticks: { color: '#000', font: { weight: 'bold' } } }
+                }
+            }
+        });
+
+        const doughnutCtx = document.getElementById('doughnutChart').getContext('2d');
+        const doughnutChart = new Chart(doughnutCtx, {
+            type: 'doughnut',
+            data: {
+                labels: [],
+                datasets: [{
+                    data: [],
+                    backgroundColor: ['#000', '#333', '#666', '#999', '#CCC'],
+                    borderWidth: 2,
+                    borderColor: '#FFF',
+                    hoverOffset: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom', labels: { color: '#000', padding: 20, font: { family: 'Inter', weight: 'bold' } } } },
+                cutout: '70%'
+            }
+        });
+
+        // Fetch Real Data from Supabase
+        async function fetchDashboardData() {
+            // Get last 500 records to calculate stats and charts
+            const { data, error } = await supabase
+                .from('network_logs')
+                .select('*')
+                .order('timestamp', { ascending: false })
+                .limit(500);
+            
+            if(error) return console.error(error);
+            if(!data || data.length === 0) return;
+
+            // 1. Update Stat Cards
+            const total = data.length;
+            const threats = data.filter(r => r.prediction !== 'Normal').length;
+            const blocked = data.filter(r => r.action === 'Blocked').length;
+            
+            document.getElementById('s-total').textContent = total;
+            document.getElementById('s-threats').textContent = threats;
+            document.getElementById('s-blocked').textContent = blocked;
+
+            // 2. Update Doughnut Chart (Threat Distribution)
+            const threatTypes = {};
+            data.forEach(r => {
+                if (r.prediction !== 'Normal') {
+                    threatTypes[r.prediction] = (threatTypes[r.prediction] || 0) + 1;
+                }
+            });
+            const tLabels = Object.keys(threatTypes);
+            const tData = Object.values(threatTypes);
+            
+            if(tLabels.length > 0) {
+                doughnutChart.data.labels = tLabels;
+                doughnutChart.data.datasets[0].data = tData;
+                doughnutChart.update();
+            } else {
+                doughnutChart.data.labels = ['No Threats'];
+                doughnutChart.data.datasets[0].data = [1];
+                doughnutChart.data.datasets[0].backgroundColor = ['#EEE'];
+                doughnutChart.update();
+            }
+
+            // 3. Update Line Chart (Group by hours loosely)
+            // For a real app, this should be a DB group by query, but we approximate it with JS here.
+            // Split the fetched data into 6 arbitrary buckets for demonstration.
+            const buckets = 6;
+            const chunkSize = Math.ceil(data.length / buckets);
+            const lineLabels = [];
+            const normalData = [];
+            const threatData = [];
+
+            for (let i = 0; i < buckets; i++) {
+                const chunk = data.slice(i * chunkSize, (i + 1) * chunkSize);
+                if (chunk.length === 0) break;
+                
+                let chunkNormal = 0;
+                let chunkThreat = 0;
+                chunk.forEach(r => {
+                    if (r.prediction === 'Normal') chunkNormal++;
+                    else chunkThreat++;
+                });
+
+                // Get approx time of the chunk start
+                const timeStr = new Date(chunk[0].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                lineLabels.unshift(timeStr); // unshift because data is descending by time
+                normalData.unshift(chunkNormal);
+                threatData.unshift(chunkThreat);
+            }
+
+            mainChart.data.labels = lineLabels;
+            mainChart.data.datasets[0].data = normalData;
+            mainChart.data.datasets[1].data = threatData;
+            mainChart.update();
+        }
+    </script>
+</body>
+</html>
