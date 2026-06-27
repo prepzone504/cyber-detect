@@ -98,13 +98,13 @@
 
     <script>
         // Supabase Initialization
-        const supabaseUrl = 'https://ysbfrcspxiytwpitpbbk.supabase.co';
-        const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzYmZyY3NweGl5dHdwaXRwYmJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NjAwMTQsImV4cCI6MjA5ODEzNjAxNH0.w5Vz_JIva0Qysn5RlVdQAQhd8EGVc8P3d3BnJeHhOqY';
-        const supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+        const _url = 'https://ysbfrcspxiytwpitpbbk.supabase.co';
+        const _key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzYmZyY3NweGl5dHdwaXRwYmJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NjAwMTQsImV4cCI6MjA5ODEzNjAxNH0.w5Vz_JIva0Qysn5RlVdQAQhd8EGVc8P3d3BnJeHhOqY';
+        const db = window.supabase.createClient(_url, _key);
 
         // Check Auth
         async function checkUser() {
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session } } = await db.auth.getSession();
             if (!session && !sessionStorage.getItem('auth_email')) {
                 window.location.href = '../auth/login.html';
             }
@@ -114,7 +114,7 @@
 
         document.getElementById('signOutBtn').addEventListener('click', async (e) => {
             e.preventDefault();
-            await supabase.auth.signOut();
+            await db.auth.signOut();
             sessionStorage.clear();
             window.location.href = '../auth/login.html';
         });
