@@ -184,14 +184,28 @@
         // Check Auth
         let currentUser = null;
         async function checkUser() {
-            const { data: { session } } = await db.auth.getSession();
-            if (!session) {
-                const mockEmail = sessionStorage.getItem('auth_email');
-                if(!mockEmail) {
-                    window.location.href = '../auth/login.html';
+            try {
+                const { data: { session } } = await db.auth.getSession();
+                if (session) {
+                    currentUser = session.user;
+                    return; // logged in fine
                 }
-            } else {
-                currentUser = session.user;
+                // Also listen for deferred session (OAuth redirect etc.)
+                db.auth.onAuthStateChange((_event, newSession) => {
+                    if (newSession) currentUser = newSession.user;
+                });
+                // Only redirect if ALSO no mock session
+                const mockEmail = sessionStorage.getItem('auth_email');
+                if (!mockEmail) {
+                    // Give 2 seconds for OAuth session to arrive before redirecting
+                    setTimeout(() => {
+                        if (!currentUser && !sessionStorage.getItem('auth_email')) {
+                            window.location.href = '../auth/login.html';
+                        }
+                    }, 2000);
+                }
+            } catch(e) {
+                console.warn('Auth check failed', e);
             }
         }
         checkUser();
