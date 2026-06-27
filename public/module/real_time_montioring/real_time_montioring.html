@@ -4,247 +4,204 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Real-Time Monitoring | CyberDetect</title>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg-base: #FFFFFF; --bg-surface: #FFFFFF; --text-primary: #000000; --text-secondary: #555555; --border-color: #000000; }
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; font-weight: 800 !important; }
-        body { display: flex; height: 100vh; background: var(--bg-base); color: var(--text-primary); overflow: hidden; }
-        
-        /* Sidebar */
-        .sidebar { width: 260px; background: var(--bg-surface); border-right: 2px solid var(--border-color); display: flex; flex-direction: column; padding: 25px; z-index: 20; }
-        .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 40px; text-decoration: none; color: black; }
-        .brand-icon { width: 32px; height: 32px; background: #000000; border-radius: 8px; }
-        .brand-name { font-family: 'Outfit', sans-serif; font-size: 1.5rem; }
-        .nav-item { display: flex; align-items: center; padding: 12px 15px; color: var(--text-primary); text-decoration: none; margin-bottom: 8px; transition: all 0.3s; border: 2px solid transparent; }
-        .nav-item:hover, .nav-item.active { background: #000000; color: #FFFFFF; }
-        
-        /* Main Area */
-        .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
-        .topbar { height: 75px; border-bottom: 2px solid var(--border-color); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; background: #FFFFFF; position: sticky; top: 0; z-index: 10; }
-        .content-area { padding: 40px; display: flex; flex-direction: column; gap: 30px; height: calc(100vh - 75px); overflow-y: auto;}
-        
-        /* Speed Graph */
-        .graph-card { border: 2px solid #000; padding: 20px; background: #FFF; box-shadow: 10px 10px 0px rgba(0,0,0,1); }
-        .graph-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-        .chart-wrap { height: 200px; position: relative; }
-        
-        /* Terminal specific */
-        .terminal-card { border: 2px solid var(--border-color); padding: 25px; box-shadow: 10px 10px 0px rgba(0,0,0,1); display: flex; flex-direction: column; flex: 1; min-height: 400px; background: #FFF; }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .card-title { font-family: 'Outfit', sans-serif; font-size: 1.3rem; text-transform: uppercase; }
-        
-        .terminal { background: #FFF; border: 2px solid var(--border-color); padding: 20px; font-family: 'Courier New', Courier, monospace; flex: 1; overflow-y: auto; color: #000; font-size: 0.95rem; line-height: 1.5; }
-        
-        /* Scrollbar for terminal */
-        .terminal::-webkit-scrollbar { width: 8px; }
-        .terminal::-webkit-scrollbar-track { background: transparent; }
-        .terminal::-webkit-scrollbar-thumb { background: #000; }
-        
-        .log-line { margin-bottom: 6px; border-bottom: 2px dashed #EEE; padding-bottom: 6px; animation: slideInLog 0.2s ease forwards; }
-        @keyframes slideInLog { from { opacity: 0; transform: translateX(-10px); } to { opacity: 1; transform: translateX(0); } }
-        
-        .log-time { color: #555; margin-right: 15px; }
-        .log-safe { background: #000; color: #FFF; padding: 2px 6px; font-size: 0.8rem; }
-        .log-danger { background: #FFF; color: #000; border: 2px solid #000; padding: 2px 6px; font-size: 0.8rem; }
-        .log-ip { color: #000; }
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --white: #FFFFFF; --black: #000000; --gray-50: #FAFAFA; --gray-100: #F5F5F5;
+            --gray-200: #E8E8E8; --gray-400: #999999; --gray-600: #555555; --gray-800: #222222;
+            --shadow-md: 0 4px 20px rgba(0,0,0,0.08); --transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+        }
+        body { display: flex; height: 100vh; background: var(--gray-50); color: var(--black); font-family: 'Inter', sans-serif; overflow: hidden; }
+        .sidebar { width: 240px; background: var(--white); display: flex; flex-direction: column; padding: 32px 0; border-right: 1px solid var(--gray-200); flex-shrink: 0; }
+        .brand { display: flex; align-items: center; gap: 12px; padding: 0 24px; margin-bottom: 48px; text-decoration: none; color: var(--black); }
+        .brand-mark { width: 36px; height: 36px; background: var(--black); border-radius: 10px; display: grid; place-items: center; flex-shrink: 0; }
+        .brand-mark svg { width: 18px; height: 18px; fill: white; }
+        .brand-name { font-family: 'Outfit', sans-serif; font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+        .nav-section { padding: 0 16px; flex: 1; }
+        .nav-label { font-size: 0.65rem; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.12em; padding: 0 8px; margin-bottom: 8px; }
+        .nav-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; color: var(--gray-600); text-decoration: none; border-radius: 8px; margin-bottom: 2px; transition: var(--transition); font-size: 0.88rem; font-weight: 500; }
+        .nav-item svg { width: 18px; height: 18px; flex-shrink: 0; }
+        .nav-item:hover { background: var(--gray-100); color: var(--black); }
+        .nav-item.active { background: var(--black); color: var(--white); }
+        .sidebar-footer { padding: 0 16px; }
+        .sign-out { display: flex; align-items: center; gap: 10px; padding: 10px 12px; color: var(--gray-400); text-decoration: none; border-radius: 8px; font-size: 0.85rem; transition: var(--transition); cursor: pointer; border: none; background: none; width: 100%; }
+        .sign-out:hover { color: var(--black); background: var(--gray-100); }
 
-        .btn-toggle { padding: 8px 16px; border: 2px solid #000; background: #FFF; cursor: pointer; text-transform: uppercase; font-size: 0.8rem; }
-        .btn-toggle.active { background: #000; color: #FFF; }
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .topbar { height: 68px; background: var(--white); border-bottom: 1px solid var(--gray-200); display: flex; align-items: center; justify-content: space-between; padding: 0 40px; flex-shrink: 0; }
+        .page-title { font-family: 'Outfit', sans-serif; font-size: 1.35rem; font-weight: 700; letter-spacing: -0.02em; }
+        .live-controls { display: flex; align-items: center; gap: 16px; }
+        .live-pill { display: flex; align-items: center; gap: 8px; background: var(--gray-100); border-radius: 20px; padding: 6px 14px; }
+        .live-dot { width: 7px; height: 7px; background: var(--black); border-radius: 50%; }
+        .live-dot.active { animation: blink 1s infinite; }
+        @keyframes blink { 0%,100% { opacity: 1; } 50% { opacity: 0.2; } }
+        .live-label { font-size: 0.78rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; }
+        .btn-toggle { background: var(--black); color: var(--white); border: none; border-radius: 8px; padding: 8px 18px; font-size: 0.82rem; font-weight: 600; cursor: pointer; transition: var(--transition); font-family: 'Inter', sans-serif; letter-spacing: 0.02em; }
+        .btn-toggle:hover { background: var(--gray-800); }
+        .btn-toggle.paused { background: var(--white); color: var(--black); border: 1px solid var(--gray-200); }
 
-        .live-badge { display: flex; align-items: center; gap: 10px; border: 2px solid #000; padding: 8px 16px; }
-        .pulse-dot { width: 10px; height: 10px; background: #000; border-radius: 50%; animation: pulse 1s infinite alternate; }
-        @keyframes pulse { 0% { opacity: 0.2; } 100% { opacity: 1; } }
+        .content { padding: 24px 40px; flex: 1; display: flex; flex-direction: column; gap: 20px; overflow: hidden; }
+        @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Speed chart */
+        .speed-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; padding: 24px 28px; animation: fadeUp 0.4s ease; }
+        .speed-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .speed-title { font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; }
+        .speed-count { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: var(--gray-400); }
+        .chart-wrap { height: 120px; position: relative; }
+
+        /* Terminal */
+        .terminal-card { background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; flex: 1; display: flex; flex-direction: column; overflow: hidden; animation: fadeUp 0.5s ease 0.1s both; }
+        .terminal-header { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--gray-200); }
+        .terminal-title { font-family: 'Outfit', sans-serif; font-size: 0.95rem; font-weight: 700; }
+        .terminal-tag { background: var(--gray-100); font-size: 0.72rem; font-weight: 600; color: var(--gray-600); padding: 4px 10px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.08em; }
+        .terminal-body { flex: 1; overflow-y: auto; padding: 16px 24px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.6; }
+        .terminal-body::-webkit-scrollbar { width: 4px; }
+        .terminal-body::-webkit-scrollbar-thumb { background: var(--gray-200); border-radius: 4px; }
+        .log-row { display: flex; align-items: center; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--gray-100); animation: fadeUp 0.15s ease; }
+        .log-row:last-child { border-bottom: none; }
+        .log-time { color: var(--gray-400); font-size: 0.75rem; flex-shrink: 0; width: 70px; }
+        .log-ip { color: var(--gray-800); flex-shrink: 0; width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .log-proto { color: var(--gray-400); flex-shrink: 0; width: 50px; }
+        .log-badge { font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; flex-shrink: 0; text-transform: uppercase; letter-spacing: 0.05em; }
+        .log-badge.threat { background: var(--black); color: var(--white); }
+        .log-badge.normal { background: var(--gray-100); color: var(--gray-600); }
+        .log-type { color: var(--gray-600); font-size: 0.78rem; }
+        .empty-state { text-align: center; color: var(--gray-400); padding: 40px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-    <div class="sidebar">
-        <a href="../../index.html" class="brand"><div class="brand-icon"></div><span class="brand-name">CyberDetect</span></a>
-        <nav>
-            <a href="../dashboard/dashboard.html" class="nav-item">Dashboard</a>
-            <a href="../real_time_montioring/real_time_montioring.html" class="nav-item active">Real-Time Monitoring</a>
-            <a href="../alert_and_treat/alert_and_treat.html" class="nav-item">Alerts & Threats</a>
-            <a href="../upload/upload.html" class="nav-item">Upload Logs</a>
-        </nav>
-        <div style="margin-top: auto;"><a href="#" id="signOutBtn" class="nav-item" style="border-color: #000; text-align: center; justify-content: center;">Sign Out</a></div>
-    </div>
-    
-    <div class="main-content">
-        <div class="topbar">
-            <h2 style="font-family: 'Outfit', sans-serif;">Live Monitoring</h2>
-            <div class="live-badge" id="live-indicator">
-                <span class="pulse-dot"></span>
-                <span style="font-size: 0.85rem; text-transform: uppercase;" id="live-text">Listening for packets</span>
+    <nav class="sidebar">
+        <a href="../../index.html" class="brand">
+            <div class="brand-mark">
+                <svg viewBox="0 0 20 20"><path d="M10 2L2 6v5c0 4.4 3.4 8.5 8 9.5 4.6-1 8-5.1 8-9.5V6L10 2z"/></svg>
             </div>
+            <span class="brand-name">CyberDetect</span>
+        </a>
+        <div class="nav-section">
+            <div class="nav-label">Navigation</div>
+            <a href="../dashboard/dashboard.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                Dashboard
+            </a>
+            <a href="../real_time_montioring/real_time_montioring.html" class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                Live Monitoring
+            </a>
+            <a href="../alert_and_treat/alert_and_treat.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                Alerts & Threats
+            </a>
+            <a href="../upload/upload.html" class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg>
+                Upload Logs
+            </a>
         </div>
-        
-        <div class="content-area">
-            <!-- Speed Graph -->
-            <div class="graph-card">
-                <div class="graph-header">
-                    <span style="font-size: 1.2rem; text-transform: uppercase;">Traffic Velocity</span>
-                    <button class="btn-toggle active" id="toggle-btn">Stop Monitoring</button>
+        <div class="sidebar-footer">
+            <button class="sign-out" id="signOutBtn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+                Sign Out
+            </button>
+        </div>
+    </nav>
+
+    <div class="main">
+        <header class="topbar">
+            <h1 class="page-title">Live Monitoring</h1>
+            <div class="live-controls">
+                <div class="live-pill">
+                    <span class="live-dot active" id="liveIndicator"></span>
+                    <span class="live-label" id="liveLabel">Listening</span>
                 </div>
-                <div class="chart-wrap">
-                    <canvas id="speedChart"></canvas>
+                <button class="btn-toggle" id="toggleBtn">Pause</button>
+            </div>
+        </header>
+        <div class="content">
+            <div class="speed-card">
+                <div class="speed-header">
+                    <span class="speed-title">Packet Velocity</span>
+                    <span class="speed-count" id="pktCount">0 events captured</span>
                 </div>
+                <div class="chart-wrap"><canvas id="speedChart"></canvas></div>
             </div>
 
-            <!-- Terminal -->
             <div class="terminal-card">
-                <div class="card-header">
-                    <div class="card-title">Live Network Stream</div>
-                    <div style="font-size: 0.9rem; border: 2px solid #000; padding: 4px 8px;">Supabase Realtime Channel</div>
+                <div class="terminal-header">
+                    <span class="terminal-title">Network Stream</span>
+                    <span class="terminal-tag">Supabase Realtime</span>
                 </div>
-                
-                <div class="terminal" id="terminal">
-                    <!-- Logs will be populated here via Supabase Realtime -->
-                    <div style="text-align: center; color: #555; margin-top: 20px;" id="waiting-msg">Waiting for database inserts in `network_logs`...</div>
+                <div class="terminal-body" id="terminalBody">
+                    <div class="empty-state" id="emptyState">Awaiting database inserts in <code>network_logs</code>…</div>
                 </div>
             </div>
         </div>
     </div>
 
     <script>
-        // Speed chart initialization
-        const labels = Array(30).fill('');
-        const speedData = Array(30).fill(0);
-        const speedChart = new Chart(document.getElementById('speedChart'), {
-            type: 'line',
-            data: {
-                labels,
-                datasets: [{
-                    data: speedData,
-                    borderColor: '#000',
-                    backgroundColor: 'rgba(0,0,0,0.1)',
-                    borderWidth: 2,
-                    fill: true,
-                    tension: 0.4,
-                    pointRadius: 0
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                animation: { duration: 300 },
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { display: false },
-                    y: {
-                        min: 0,
-                        grid: { color: '#EEE' },
-                        ticks: { color: '#000', font: { weight: '800' } }
-                    }
-                }
-            }
-        });
-
-        // Supabase Initialization
         const _url = 'https://ysbfrcspxiytwpitpbbk.supabase.co';
         const _key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlzYmZyY3NweGl5dHdwaXRwYmJrIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI1NjAwMTQsImV4cCI6MjA5ODEzNjAxNH0.w5Vz_JIva0Qysn5RlVdQAQhd8EGVc8P3d3BnJeHhOqY';
         const db = window.supabase.createClient(_url, _key);
 
-        // Check Auth
         async function checkUser() {
             const { data: { session } } = await db.auth.getSession();
-            if (!session && !sessionStorage.getItem('auth_email')) {
-                window.location.href = '../auth/login.html';
-            }
+            if (!session && !sessionStorage.getItem('auth_email')) window.location.href = '../auth/login.html';
         }
         checkUser();
+        document.getElementById('signOutBtn').addEventListener('click', async () => { await db.auth.signOut(); sessionStorage.clear(); window.location.href = '../auth/login.html'; });
 
-        document.getElementById('signOutBtn').addEventListener('click', async (e) => {
-            e.preventDefault();
-            await db.auth.signOut();
-            sessionStorage.clear();
-            window.location.href = '../auth/login.html';
+        const speedData = Array(40).fill(0);
+        const speedChart = new Chart(document.getElementById('speedChart'), {
+            type: 'line',
+            data: { labels: speedData.map((_,i) => i), datasets: [{ data: speedData, borderColor: '#000', backgroundColor: 'rgba(0,0,0,0.05)', borderWidth: 2, fill: true, tension: 0.5, pointRadius: 0 }] },
+            options: { responsive: true, maintainAspectRatio: false, animation: { duration: 400 }, plugins: { legend: { display: false } },
+                scales: { x: { display: false }, y: { min: 0, grid: { color: '#F5F5F5' }, ticks: { color: '#999', font: { family: 'Inter', size: 10 } }, border: { display: false } } } }
         });
 
-        const terminal = document.getElementById('terminal');
-        const waitingMsg = document.getElementById('waiting-msg');
-        let monitoring = true;
-        let realtimeChannel = null;
-        let batchCounter = 0;
+        const terminal = document.getElementById('terminalBody');
+        const empty = document.getElementById('emptyState');
+        let count = 0, spike = 0, monitoring = true, channel = null;
 
-        function addLogLine(record) {
-            if(waitingMsg) waitingMsg.style.display = 'none';
-
-            const time = new Date(record.timestamp).toLocaleTimeString();
-            const isThreat = record.prediction !== 'Normal';
-            const statusHTML = isThreat ? `<span class="log-danger">THREAT</span>` : `<span class="log-safe">NORMAL</span>`;
-            
-            const line = document.createElement('div');
-            line.className = 'log-line';
-            line.innerHTML = `<span class="log-time">${time}</span> | SRC: <span class="log-ip">${record.source_ip.padEnd(15)}</span> | DST: <span class="log-ip">${record.dest_ip.padEnd(15)}</span> | TYPE: ${record.prediction.padEnd(8)} | ${statusHTML}`;
-            
-            terminal.appendChild(line);
-            terminal.scrollTop = terminal.scrollHeight;
-            
-            if (terminal.childElementCount > 100) {
-                terminal.removeChild(terminal.firstChild);
-            }
-        }
-
-        // Mock chart updates for smooth visual, but inject real data spikes
         setInterval(() => {
-            if(monitoring) {
-                speedData.push(batchCounter);
-                speedData.shift();
-                speedChart.update('none');
-                batchCounter = Math.max(0, batchCounter - 5); // decay
-            }
-        }, 1000);
-
-        function startMonitoring() {
-            realtimeChannel = db.channel('custom-all-channel')
-            .on(
-                'postgres_changes',
-                { event: 'INSERT', schema: 'public', table: 'network_logs' },
-                (payload) => {
-                    addLogLine(payload.new);
-                    batchCounter += 20; // Spike the chart when data arrives
-                }
-            )
-            .subscribe((status) => {
-                if (status === 'SUBSCRIBED') {
-                    console.log('Listening to network_logs...');
-                }
-            });
-        }
-
-        function stopMonitoring() {
-            if (realtimeChannel) {
-                db.removeChannel(realtimeChannel);
-                realtimeChannel = null;
-            }
-        }
-
-        // Initial Start
-        startMonitoring();
-
-        // Toggle Button
-        document.getElementById('toggle-btn').addEventListener('click', (e) => {
-            monitoring = !monitoring;
-            const btn = e.target;
-            const badge = document.getElementById('live-indicator');
-            const text = document.getElementById('live-text');
-
             if (monitoring) {
-                btn.textContent = 'Stop Monitoring';
-                btn.classList.add('active');
-                badge.style.opacity = '1';
-                text.textContent = 'Listening for packets';
-                startMonitoring();
-            } else {
-                btn.textContent = 'Start Monitoring';
-                btn.classList.remove('active');
-                badge.style.opacity = '0.5';
-                text.textContent = 'Monitoring Paused';
-                stopMonitoring();
+                speedData.push(spike); speedData.shift();
+                speedChart.data.datasets[0].data = [...speedData];
+                speedChart.update('none');
+                spike = Math.max(0, spike - 3);
             }
-        });
+        }, 600);
 
+        function addLog(r) {
+            if (empty) empty.style.display = 'none';
+            count++;
+            document.getElementById('pktCount').textContent = count + ' events captured';
+            spike += 15;
+            const isThreat = r.prediction !== 'Normal';
+            const time = new Date(r.timestamp).toLocaleTimeString();
+            const div = document.createElement('div');
+            div.className = 'log-row';
+            div.innerHTML = `<span class="log-time">${time}</span><span class="log-ip">${r.source_ip}</span><span class="log-proto">${r.protocol}</span><span class="log-type">${r.prediction}</span><span class="log-badge ${isThreat ? 'threat' : 'normal'}">${isThreat ? 'Threat' : 'Normal'}</span>`;
+            terminal.appendChild(div);
+            terminal.scrollTop = terminal.scrollHeight;
+            if (terminal.childElementCount > 120) terminal.removeChild(terminal.children[1]);
+        }
+
+        function startListen() {
+            channel = db.channel('rt-network-logs').on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'network_logs' }, p => addLog(p.new)).subscribe();
+        }
+        function stopListen() { if (channel) { db.removeChannel(channel); channel = null; } }
+        startListen();
+
+        document.getElementById('toggleBtn').addEventListener('click', () => {
+            monitoring = !monitoring;
+            const btn = document.getElementById('toggleBtn');
+            const dot = document.getElementById('liveIndicator');
+            const label = document.getElementById('liveLabel');
+            if (monitoring) { btn.textContent = 'Pause'; btn.classList.remove('paused'); dot.classList.add('active'); label.textContent = 'Listening'; startListen(); }
+            else { btn.textContent = 'Resume'; btn.classList.add('paused'); dot.classList.remove('active'); label.textContent = 'Paused'; stopListen(); }
+        });
     </script>
 </body>
 </html>
